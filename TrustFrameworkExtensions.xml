@@ -149,6 +149,7 @@
         <Actions>
           <Action Id="SendCode">
             <ValidationClaimsExchange>
+              <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="AAD-UserReadUsingEmailAddress" />  
               <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="GenerateOtp" />
               <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="SendOtp" />
             </ValidationClaimsExchange>
