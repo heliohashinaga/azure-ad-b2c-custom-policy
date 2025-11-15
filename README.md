@@ -55,8 +55,11 @@ To start using Custom Policies in Azure AD B2C:
 18. Created an API to **limit verification requests per email** 
     - Max 2 requests within 5 minutes.
     - Method `GET` receiving `email` from query.
+    - Basic Authentication
     - Return `allowed` (boolean) - If user is allowed to continue the process.
-19. Integrated the API to enforce **rate limiting** for email verification calls.
+19. Registered the API Basic Authentication `username` in `B2C_1A_ConnectorUsername` (Azure AD B2C -> Policies -> Identity Experience Framework -> Manage -> Policy Keys).
+20. Registered the API Basic Authentication `password` in `B2C_1A_ConnectorPassword` (Azure AD B2C -> Policies -> Identity Experience Framework -> Manage -> Policy Keys).
+21. Integrated the API to enforce **rate limiting** for email verification calls.
 
 ---
 ## 🔧 **VS Code Extension Configuration**
