@@ -14,6 +14,7 @@
   </BasePolicy>
   <BuildingBlocks>
     <ClaimsSchema>
+
       <ClaimType Id="readOnlyEmail">
         <DisplayName>Email Address</DisplayName>
         <DataType>string</DataType>
@@ -21,7 +22,6 @@
         <UserInputType>Readonly</UserInputType>
       </ClaimType>
 
-      <!--Add emails list-->
       <ClaimType Id="emails">
         <DisplayName>Email Addresses</DisplayName>
         <DataType>stringCollection</DataType>
@@ -33,7 +33,6 @@
         <UserHelpText>Email addresses associated with the user</UserHelpText>
       </ClaimType>
 
-      <!--Add Verification Code-->
       <ClaimType Id="verificationCode">
         <DisplayName>Verification Code</DisplayName>
         <DataType>string</DataType>
@@ -41,13 +40,11 @@
         <UserInputType>TextBox</UserInputType>
       </ClaimType>
 
-      <!--Add OTP-->
       <ClaimType Id="otp">
         <DisplayName>One-time password</DisplayName>
         <DataType>string</DataType>
       </ClaimType>
 
-      <!--Add EmailRequestBody-->
       <ClaimType Id="emailRequestBody">
         <DisplayName>SendGrid request body</DisplayName>
         <DataType>string</DataType>
@@ -58,7 +55,9 @@
         <DataType>boolean</DataType>
       </ClaimType>
     </ClaimsSchema>
+
     <ClaimsTransformations>
+
       <ClaimsTransformation Id="CopySignInNameToReadOnly" TransformationMethod="FormatStringClaim">
         <InputClaims>
           <InputClaim ClaimTypeReferenceId="signInName" TransformationClaimType="inputClaim" />
@@ -69,7 +68,9 @@
         <OutputClaims>
           <OutputClaim ClaimTypeReferenceId="readOnlyEmail" TransformationClaimType="outputClaim" />
         </OutputClaims>
-      </ClaimsTransformation>    
+      </ClaimsTransformation>
+
+      <!--Copy the value from signInName to claim type email-->
       <ClaimsTransformation Id="CopySignInNameToEmail" TransformationMethod="FormatStringClaim">
         <InputClaims>
           <InputClaim ClaimTypeReferenceId="signInName" TransformationClaimType="inputClaim" />
@@ -82,7 +83,7 @@
         </OutputClaims>
       </ClaimsTransformation>
 
-      <!--Add transformation Send Grid e-mail request-->
+      <!--Create Send Grid email request-->
       <ClaimsTransformation Id="GenerateEmailRequestBody" TransformationMethod="GenerateJson">
         <InputClaims>
           <InputClaim ClaimTypeReferenceId="email" TransformationClaimType="personalizations.0.to.0.email" />
@@ -99,7 +100,7 @@
         </OutputClaims>
       </ClaimsTransformation>
 
-      <!--Add ClaimsTransformation to create emails with principal mail-->
+      <!--Copy the value from signInNames.emailAddress (user main email) to claim type emails-->
       <ClaimsTransformation Id="CreateEmailsCollection" TransformationMethod="AddItemToStringCollection">
         <InputClaims>
           <InputClaim ClaimTypeReferenceId="signInNames.emailAddress" TransformationClaimType="item" />
@@ -113,13 +114,14 @@
 
     <ContentDefinitions>
       <ContentDefinition Id="api.signuporsignin">
-        <LoadUri>{Settings:PageLayoutSignIn}</LoadUri> <!-- Added Custom page layout --> 
+        <LoadUri>{Settings:PageLayoutSignIn}</LoadUri>
         <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
         <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:2.1.5</DataUri>
         <Metadata>
           <Item Key="DisplayName">Signin and Signup</Item>
         </Metadata>
       </ContentDefinition>
+
       <ContentDefinition Id="api.verifyemail">
         <LoadUri>{Settings:PageLayoutSignInMfaEmail}</LoadUri>
         <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
@@ -128,6 +130,7 @@
           <Item Key="DisplayName">Authenticate your account</Item>
         </Metadata>
       </ContentDefinition>
+
       <ContentDefinition Id="api.localaccountpasswordreset">
         <LoadUri>{Settings:PageLayoutNewPassword}</LoadUri>
         <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
@@ -139,7 +142,7 @@
     </ContentDefinitions>
 
     <DisplayControls>
-      <!--Add email verification control-->
+      <!--Email Display Control for Verify Email to use Validation in Actions-->
       <DisplayControl Id="emailVerificationControl" UserInterfaceControlType="VerificationControl">
         <InputClaims>
           <InputClaim ClaimTypeReferenceId="email" />
@@ -233,10 +236,8 @@
             <OutputClaim ClaimTypeReferenceId="givenName" />
             <OutputClaim ClaimTypeReferenceId="surname" />
           </OutputClaims>
-          
-          <!--Add OutputClaimsTransformation-->
           <OutputClaimsTransformations>
-            <OutputClaimsTransformation ReferenceId="CreateEmailsCollection" />
+            <OutputClaimsTransformation ReferenceId="CreateEmailsCollection" /> <!--Add claim type emails in JWT payload-->
           </OutputClaimsTransformations>
 
           <IncludeTechnicalProfile ReferenceId="AAD-Common" />
@@ -252,6 +253,8 @@
             <PersistedClaim ClaimTypeReferenceId="readOnlyEmail" />
           </PersistedClaims>
         </TechnicalProfile>
+        
+        <!--Configure SignUpOrSignIn functions-->
         <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email">
           <Metadata>
             <Item Key="setting.showSignupLink">false</Item> <!-- Remove the sign up link -->
@@ -259,9 +262,11 @@
           </Metadata>
           <OutputClaimsTransformations>
             <OutputClaimsTransformation ReferenceId="CopySignInNameToReadOnly" />
-            <OutputClaimsTransformation ReferenceId="CopySignInNameToEmail" />
+            <OutputClaimsTransformation ReferenceId="CopySignInNameToEmail" /> <!--Add claim type email in JWT payload-->
           </OutputClaimsTransformations>
         </TechnicalProfile>
+
+        <!--Verify email in Sign in User Journey-->
         <TechnicalProfile Id="EmailVerifyOnSignIn">
           <DisplayName>EmailVerifyOnSignIn</DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
@@ -295,6 +300,7 @@
             <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
             <Item Key="setting.showCancelButton">false</Item>
           </Metadata>
+          <!--Secret registered Azure AD B2C -> Policies -> Identity Experience Framework -> Manage -> Policy Keys -->
           <CryptographicKeys>
             <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
           </CryptographicKeys>
@@ -318,10 +324,10 @@
       </TechnicalProfiles>
     </ClaimsProvider>
 
-    <!--Add OTP-->
     <ClaimsProvider>
       <DisplayName>One Time Password</DisplayName>
       <TechnicalProfiles>
+        <!--Generate OTP code-->
         <TechnicalProfile Id="GenerateOtp">
           <DisplayName>Generate One Time Password</DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.OneTimePasswordProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
@@ -341,6 +347,7 @@
           </OutputClaims>
         </TechnicalProfile>
 
+        <!--Verify OTP Code-->
         <TechnicalProfile Id="VerifyOtp">
           <DisplayName>Verify One Time Password</DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.OneTimePasswordProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
@@ -353,6 +360,7 @@
           </InputClaims>
         </TechnicalProfile>
 
+        <!--Send OTP Code with SendGrid-->
         <TechnicalProfile Id="SendOtp">
           <DisplayName>SendGrid's email API to send the user code</DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
@@ -362,6 +370,7 @@
             <Item Key="SendClaimsIn">Body</Item>
             <Item Key="ClaimUsedForRequestPayload">emailRequestBody</Item>
           </Metadata>
+          <!--Secret registered Azure AD B2C -> Policies -> Identity Experience Framework -> Manage -> Policy Keys -->
           <CryptographicKeys>
             <Key Id="BearerAuthenticationToken" StorageReferenceId="B2C_1A_SendGridSecret" />
           </CryptographicKeys>
@@ -378,6 +387,7 @@
     <ClaimsProvider>
       <DisplayName>Token Issuer</DisplayName>
       <TechnicalProfiles>
+        <!--Configure JWT Token-->
         <TechnicalProfile Id="JwtIssuer">
           <DisplayName>JWT Issuer</DisplayName>
           <Protocol Name="OpenIdConnect" />
@@ -390,6 +400,7 @@
             <Item Key="IdTokenLifetime">86400</Item> <!-- Increase to 24h -->
             <Item Key="RefreshTokenLifetime">1209600</Item> <!-- Increase to 14 days -->
           </Metadata>
+          <!--Secret registered Azure AD B2C -> Policies -> Identity Experience Framework -> Manage -> Policy Keys -->
           <CryptographicKeys>
             <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
             <Key Id="issuer_refresh_token_key" StorageReferenceId="B2C_1A_TokenEncryptionKeyContainer" />
@@ -402,6 +413,7 @@
     <ClaimsProvider>
       <DisplayName>Rate Limit Control</DisplayName>
       <TechnicalProfiles>
+        <!--Call API to verify rate limit-->
         <TechnicalProfile Id="API-Email-Verify-RateLimit">
           <DisplayName>Email Verification Rate Limit</DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
@@ -479,15 +491,18 @@
 
     <UserJourney Id="PasswordReset">
       <OrchestrationSteps>
+        <!--Email verify with custom validations-->
         <OrchestrationStep Order="1" Type="ClaimsExchange">
           <ClaimsExchanges>
             <ClaimsExchange Id="PasswordResetUsingEmailAddressExchange" TechnicalProfileReferenceId="LocalAccountDiscoveryUsingEmailAddress-VerificationControl" />
           </ClaimsExchanges>
         </OrchestrationStep>
+
         <OrchestrationStep Order="2" Type="ClaimsExchange">
           <ClaimsExchanges>
             <ClaimsExchange Id="NewCredentials" TechnicalProfileReferenceId="LocalAccountWritePasswordUsingObjectId" />
           </ClaimsExchanges>
+        
         </OrchestrationStep>
         <OrchestrationStep Order="3" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
       </OrchestrationSteps>
