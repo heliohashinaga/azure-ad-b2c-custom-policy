@@ -10,6 +10,7 @@ Custom Policies include the following components:
 
 - **TrustFrameworkBase.xml**: Defines common reusable elements across all policies, such as Claims, ClaimsTransformations, and TechnicalProfiles.
 - **TrustFrameworkExtensions.xml**: Extends TrustFrameworkBase with application-specific configurations.
+- **TrustFrameworkLocalization.xml**: Language configurations.
 - **Policy Files** (e.g., `SignUpOrSignin.xml`, `PasswordReset.xml`, `ProfileEdit.xml`): Define user interaction and authentication flows.
 - **Claims**: Information about the user, such as name, email, etc.
 - **ClaimsTransformations**: Rules to modify or validate Claims.
