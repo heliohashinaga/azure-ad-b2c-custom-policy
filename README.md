@@ -68,14 +68,6 @@ To start using Custom Policies in Azure AD B2C:
 
 ---
 
-## Folder Structure
-
-```
-/custom-policy -> Azure AD B2C Custom Policy configuration files
-/page-layout   -> Html, CSS, JS and Images of Sign In and Password Reset page
-/sendgrid      -> SendGrid E-mail verification template
-```
-
 > SignIn and Password Reset implementation located in:
 > `TrustFrameworkExtensions.xml`: Main login
 > `SignUpOrSignIn.xml`: SignIn start page
